@@ -23,6 +23,7 @@
 - [비즈니스 임팩트](#비즈니스-임팩트)
 - [주요 기능](#주요-기능)
 - [시스템 아키텍처](#시스템-아키텍처)
+- [보안 아키텍처](#보안-아키텍처)
 - [핵심 기술](#핵심-기술)
 - [핵심 성과](#핵심-성과)
 - [기술 스택](#기술-스택)
@@ -43,15 +44,15 @@
 
 ### 현재 스포츠 티켓팅의 구조적 문제
 
-2025 KBO 총 관중 **1,200만** · 좌석 점유율 **80% 이상** · 연간 티켓 시장 약 **1,290억 원**.
-수요가 커진 만큼 구조적 문제도 커졌습니다.
+2025 KBO 총 관중 **12,312,519명** · 좌석 점유율 **82.9%** · 경기당 평균 **17,101명** · 연간 티켓 시장 약 **1,290억 원**.
+2년 연속 최다 관중 갱신, 2030 여성 팬층 유입 등 시장은 커지고 있지만 구조적 문제도 함께 커졌습니다.
 
 | Pain Point | 현상 |
 | --- | --- |
-| **암표 시장 과열** | 전국 티켓 구매자 중 **36%가 2차 판매(암표) 구매 경험** (마크로밀엠브레인 조사) |
-| **매크로 / 봇 공격** | 인기 티켓의 **26.5%**가 매크로에 의해 선점 → 정상 유저 접근성 저하 |
-| **자동배정 불만족** | 좌석 위치 확인 불가 · 관람 경험 저하 |
-| **직접 선택의 비효율** | 빠른 확보 우선으로 좌석이 띄엄띄엄 확보되어 **연석 확보 어려움** |
+| **암표 시장 과열** | 1·2차 티켓 구매 경험자의 **36%가 2차 판매(암표) 구매**, 36.5%는 구매 고려 (마크로밀엠브레인 조사) |
+| **매크로 / 봇 공격** | 단순 봇·자동화 봇·Residential Proxy 고급 봇까지 — 전통 탐지 규칙은 오탐·미탐 트레이드오프에 갇힘 |
+| **자동배정 불만족** | 결제 전까지 좌석 위치 확인 불가 · 관람 경험 저하 |
+| **직접 선택의 비효율** | 빠른 확보 우선으로 좌석이 띄엄띄엄 확보되어 **연석 확보 어려움** · 네트워크 빠른 사용자만 유리한 불공정 |
 
 ### 솔루션 — 분산 추천으로 수요 분포 재설계
 
@@ -111,9 +112,12 @@
 
 ### 6. AI 공격 / 방어 에이전트
 
-- **공격 에이전트**: FlowState 상태머신 · 마우스 궤적 합성 · VQA 자동 풀이 · 스웜 인프라 · LLM 코디네이터
-- **방어 에이전트**: FastAPI + 실시간 룰 + LLM 사후 판단 · 정책 자동 개선
-- **감사 · KPI 자동 집계**로 탐지율 · 우회율 · 성능 지표 실시간 추적
+> **공격자가 되어 방어를 검증한다** — 기존 AI 방어의 맹점을 스스로 뚫어보며 약점을 보완.
+
+- **공격 에이전트**: FlowState 상태머신 · 사람 궤적 재현(곡선·미세 떨림) · VQA 자동 풀이 · 스웜 인프라 · LLM 코디네이터 (전략 실시간 조정)
+- **방어 에이전트**: 실시간 룰 기반 5개 행동 지표(직선도 35% · 손떨림 25% · 머뭇거림 15% · 경로 15% · 속도 10%) 가중합 → Tier(T0~T3) 판정 → VQA 게이트 필수 통과
+- **LLM 사후 판단 (Track A/B 병렬)**: T1·T2 애매 세션 재검토 + 탐지 기준 점진 적용 (5% → 20% → 50% → 100%) · 장애 시 규칙 기반 자동 전환
+- **실측 결과** (30 trace 기준): Runtime Action THROTTLE 63.3% · BLOCK 0% · 공격 Hold 도달률 66.7% · VQA 통과율 83.3%
 
 ### 7. 주문 / 결제
 
@@ -125,30 +129,30 @@
 
 ## 시스템 아키텍처
 
-```text
-Client (Browser / Mobile App)
-      ↓
-API-Gateway (:8085)  —  Spring Cloud Gateway · WebFlux · JWT 검증 · X-User-Id 주입
-      ↓
-Istio Service Mesh · ArgoCD GitOps
-      ↓
-┌─────────────┬──────────┬──────────┬─────────────┬──────────────┐
-│ Auth-Guard  │  Queue   │   Seat   │ Order-Core  │  common-core │
-│   :8080     │  :8081   │  :8082   │   :8083     │ (공유 라이브러리) │
-│  OAuth2·JWT │ ZSET·Lua │ Redisson │ @Tx AFTER_  │  도메인 엔티티  │
-│   블랙리스트   │ Admission │ RLock·Hold │  COMMIT  │ Kafka 스키마   │
-└─────────────┴──────────┴──────────┴─────────────┴──────────────┘
-      ↓                    ↓                           ↑
- PostgreSQL 16         Redis (ZSET)              Apache Kafka
-  (RDS 1 instance)   (ElastiCache 1 instance)   (KRaft · 3 brokers)
-                                                 P=3 · acks=all · DLT
+<p align="center">
+  <img src="https://raw.githubusercontent.com/goorm-gongbang/001-finalPR/main/Group%202085665504.svg" alt="System Architecture" width="100%"/>
+</p>
 
-─── SECURITY / DEFENSE LAYER ──────────────────────────────────
-authz-adapter (Go / gRPC :9001)  ↔  AI-defense (FastAPI :8000)
-```
+- **Entry**: API-Gateway `:8085` (Spring Cloud Gateway + WebFlux) — JWT 검증 · X-User-Id 주입 · Rate Limit
+- **Service Mesh**: Istio + ArgoCD GitOps
+- **MSA 모듈**: Auth-Guard `:8080` · Queue `:8081` · Seat `:8082` · Order-Core `:8083` · common-core (공유 라이브러리)
+- **Data**: Amazon RDS PostgreSQL 16 (서비스별 스키마 · AES-256-GCM 필드 암호화) · ElastiCache Redis (ZSET 대기열 · Redisson RLock · Admission Token · 블랙리스트)
+- **Messaging**: Apache Kafka (KRaft · 3 brokers · P=3 · acks=all · DLT) — `payment-completed` · `order-cancelled` · `bank-transfer-expired` · `seat-hold-completed` · `user-blocked`
 
-**MSA 서비스 간 통신은 Kafka 기반 Event-Driven Architecture로 비동기 처리**되며,
-**Transactional Outbox · 파티션 키 순서 보장 · acks=all + DLT · 멱등 소비** 4중 안전 장치로 정합성을 보장합니다.
+**비동기 정합성 보장 4중 안전 장치**: `@TxEventListener(AFTER_COMMIT)` Transactional Outbox · 파티션 키 기반 순서 보장 · `acks=all` + DLT 재시도 · 멱등 소비.
+
+---
+
+## 보안 아키텍처
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/goorm-gongbang/001-finalPR/main/Group%202085665504.svg" alt="Security Architecture" width="100%"/>
+</p>
+
+- **authz-adapter** (Go · gRPC `:9001`): API Gateway 요청을 가로채 권한/봇 판단을 AI-defense에 위임 · 정책 양방향 주입
+- **AI-defense** (FastAPI `:8000`): 실시간 Tier 판정(T0~T3) + VQA 게이트 + LLM 사후 판단 · Redis/ClickHouse 이벤트 스트림
+- **VQA 필수 게이트**: 좌석 선택 진입 시 등급과 무관하게 전원 1회 통과 필수 (정답 + 풀이 과정 2중 검증)
+- **개인정보 보호**: AES-256-GCM 필드 암호화(PII) · HttpOnly Cookie 기반 Refresh/admissionToken 분리
 
 ---
 
@@ -175,18 +179,18 @@ UPDATE match_seats
 
 ## 핵심 성과
 
-### 부하 테스트 (k6 · 1,000 VU · 3일 연속)
+### 부하 테스트 (k6 · 1,000 VU · Phase 0 → Phase 4)
 
 | 메트릭 | Phase 0 (AS-IS) | Phase 4 (TO-BE) | 개선률 |
 | --- | --- | --- | --- |
-| Queue P99 | 6,887ms | **65ms** | **−99%** |
-| Seat P99 | 8,048ms | 4,414ms | −45% |
-| RPS | 33.8 | **237.6** | **×7** |
-| 503 에러 | 1.7% | **0%** | 완전 제거 |
-| DB 커넥션 peak | 270 (한계) | 100 | −63% |
+| Queue P99 | 8,342 ms | **898 ms** | **−89%** |
+| Seat P99 | 8,048 ms | 4,414 ms | −45% |
+| 시나리오 완주 시간 | 2분 38초 | **15초** | **−90.5%** |
+| RPS (Queue + Seat) | 33.8 | **237.6** | **×7** |
+| 5xx 에러 | 1~2% | **0건** | 완전 제거 |
+| DB 커넥션 peak | 270 (한계) | ~100 | −63% |
 
-> **DB 인스턴스 업그레이드 없이** 앱 레벨 최적화 (Caffeine → Redis 분산 캐시 → 응답 캐시 → OSIV OFF + Lua + Resilience4j)만으로 달성.
-> 절감 효과 약 **$100 / 월 × 영구**.
+> **DB 인스턴스 업그레이드 없이** 앱 레벨 4단계 최적화 (Phase 1 Caffeine 로컬 캐시 → Phase 2 Redis 분산 캐시 → Phase 3 응답 캐시 + HikariCP 튜닝 → Phase 4 OSIV OFF + Redis Lua 원자 연산 + Resilience4j 서킷브레이커)만으로 달성.
 
 ### 추천 알고리즘 실측 비교 (1,000 VU · 동일 경기 경합)
 

@@ -1,7 +1,7 @@
 # 구름공방 · Playball
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/goorm-gongbang/001-finalPR/main/img/playball_logo.svg" alt="Playball Logo" width="200"/>
+  <img src="images/playball_logo.svg" alt="Playball Logo" width="200"/>
 </p>
 
 <p align="center">
@@ -130,7 +130,7 @@
 ## 시스템 아키텍처
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/goorm-gongbang/001-finalPR/main/Group%202085665504.svg" alt="System Architecture" width="100%"/>
+  <img src="images/architecture_msa.svg" alt="MSA Architecture" width="100%"/>
 </p>
 
 - **Entry**: API-Gateway `:8085` (Spring Cloud Gateway + WebFlux) — JWT 검증 · X-User-Id 주입 · Rate Limit
@@ -146,13 +146,20 @@
 ## 보안 아키텍처
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/goorm-gongbang/001-finalPR/main/Group%202085665504.svg" alt="Security Architecture" width="100%"/>
+  <img src="images/architecture_security_7layer.png" alt="Security 7-Layer Architecture" width="100%"/>
 </p>
 
-- **authz-adapter** (Go · gRPC `:9001`): API Gateway 요청을 가로채 권한/봇 판단을 AI-defense에 위임 · 정책 양방향 주입
-- **AI-defense** (FastAPI `:8000`): 실시간 Tier 판정(T0~T3) + VQA 게이트 + LLM 사후 판단 · Redis/ClickHouse 이벤트 스트림
-- **VQA 필수 게이트**: 좌석 선택 진입 시 등급과 무관하게 전원 1회 통과 필수 (정답 + 풀이 과정 2중 검증)
-- **개인정보 보호**: AES-256-GCM 필드 암호화(PII) · HttpOnly Cookie 기반 Refresh/admissionToken 분리
+**Layer 1–7 다중 방어 — 경계부터 앱단까지**
+
+| # | Layer | 책임 |
+| --- | --- | --- |
+| 1 | **도메인 허용 / X-bot-token** | 허용 도메인만 API 호출 가능 · 프론트 발급 토큰 없으면 요청 거부 |
+| 2 | **CDN / AWS WAF** | Geo Block(한국만) · Rate Limit(IP 1,500/5분 · Auth 50/5분) · OWASP Top 10 · Log4Shell · SQLi · 페이로드 8KB 제한 |
+| 3 | **ALB** | HTTPS only · SG로 CDN IP 및 특정 팀원만 허용 |
+| 4 | **Istio** | EnvoyFilter Lua WAF · CDN `X-Origin-Verify` 검증 · Rate Limit (Global + Redis/Local) |
+| 5 | **ext_authz (authz-adapter)** | Go · gRPC `:9001` — API Gateway 요청 가로채 실시간 봇 판정 위임 |
+| 6 | **AI-defense** | FastAPI `:8000` — 행동 분석 + fingerprint · 5개 지표 Tier 판정 · VQA 게이트 · LLM 사후 판단 |
+| 7 | **앱단 (Gateway)** | JWT 검증 · Redis 블랙리스트 · AES-256-GCM 필드 암호화(PII) · HttpOnly Cookie 기반 Refresh/admissionToken 분리 |
 
 ---
 

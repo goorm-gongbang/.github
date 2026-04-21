@@ -287,6 +287,12 @@ Playball은 kt cloud TECH UP 1기 실무통합 프로젝트의 **PROJECT 2 "Traf
 | **백엔드** | [102-goormgb-backend](https://github.com/goorm-gongbang/102-goormgb-backend) |
 | **AI 방어 서버** | [201-goormgb-ai](https://github.com/goorm-gongbang/201-goormgb-ai) |
 | **AI 공격 서버** | [203-goormgb-ai-attack](https://github.com/goorm-gongbang/203-goormgb-ai-attack) |
+| **테라폼** | [301-playball-terraform](https://github.com/goorm-gongbang/301-playball-terraform) |
+| **부트스트랩** | [302-goormgb-k8s-bootstrap](https://github.com/goorm-gongbang/302-goormgb-k8s-bootstrap) |
+| **헬름** | [303-goormgb-k8s-helm](https://github.com/goorm-gongbang/303-goormgb-k8s-helm) |
+| **성능(부하)테스트** | [304-goormgb-k6-operators](https://github.com/goorm-gongbang/304-goormgb-k6-operators) |
+| **Teamcity(CICD)** | [306-goormgb-teamcity](https://github.com/goorm-gongbang/306-goormgb-teamcity) |
+
 
 ---
 

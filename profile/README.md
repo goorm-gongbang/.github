@@ -100,7 +100,7 @@
 | 주제 | **Traffic-Master: AI 기반 대규모 티켓팅 플랫폼** |
 | 개발 기간 | 2026.01.14 (수) ~ 2026.04.21 (화) |
 | 소속 | **kt cloud TECH UP 1기 · 실무통합 프로젝트** |
-| 배포 사이트 | [playball.one](https://playball.one/) |
+| 배포 사이트 | [playball.one](https://dev.playball.one/) |
 | 프로젝트 인원 | 총 16명 (기획·디자인·개발·클라우드·보안·AI) |
 
 Playball은 kt cloud TECH UP 1기 실무통합 프로젝트의 **PROJECT 2 "Traffic-Master"** 주제를 선택해, 기획·디자인·개발·클라우드·보안·AI 9개 과정이 협업하여 완성한 야구 티켓팅 서비스입니다.

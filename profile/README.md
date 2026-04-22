@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://playball.one"><img src="https://img.shields.io/badge/Service-playball.one-00AD82?style=for-the-badge"/></a>
+  <a href="https://dev.playball.one"><img src="https://img.shields.io/badge/Service-playball.one-00AD82?style=for-the-badge"/></a>
   <a href="https://docs.playball.one/planning/overview"><img src="https://img.shields.io/badge/Docs-docs.playball.one-1f6feb?style=for-the-badge"/></a>
 </p>
 

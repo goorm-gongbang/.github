@@ -281,7 +281,7 @@ Playball은 kt cloud TECH UP 1기 실무통합 프로젝트의 **PROJECT 2 "Traf
 
 ## 레포지토리
 
-| 영역 | Repository |
+| 영역 | 저장소 |
 | --- | --- |
 | **프론트엔드** | [101-goormgb-frontend](https://github.com/goorm-gongbang/101-goormgb-frontend) |
 | **백엔드** | [102-goormgb-backend](https://github.com/goorm-gongbang/102-goormgb-backend) |
@@ -300,7 +300,7 @@ Playball은 kt cloud TECH UP 1기 실무통합 프로젝트의 **PROJECT 2 "Traf
 
 | 항목 | URL |
 | --- | --- |
-| 서비스 운영 | [playball.one](https://playball.one/) |
+| 서비스 운영 | [playball.one](https://dev.playball.one/) |
 | 프로젝트 Docs | [docs.playball.one](https://docs.playball.one/planning/overview) |
 | WBS | [Google Sheets](https://docs.google.com/spreadsheets/d/1axI4Ynw2SzQXTDA9udrfF_bvB5g_KfeJ8SLNYf0UtSE/edit?usp=sharing) |
 | QA 시트 | [Google Sheets](https://docs.google.com/spreadsheets/d/13FvuJ2gUbNocKz6nOm2aRKB3uSNBFATWn5DN3W8KRUY/edit?gid=0#gid=0) |
